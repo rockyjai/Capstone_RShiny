@@ -113,6 +113,13 @@ shinyServer(function(input, output){
                                                 lat = cities_max_bike$LAT[index],
                                                 popup = cities_max_bike$DETAILED_LABEL[index])
     
+    output$temp_line <- renderPlot({
+      ggplot(city_weather_bike_df, aes(x = FORECASTDATETIME, y = TEMPERATURE)) +
+        geom_line(na.rm=TRUE) +
+        geom_point() +
+        geom_text()
+    })
+    
   }
   else {
     
