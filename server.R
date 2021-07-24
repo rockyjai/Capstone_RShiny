@@ -35,17 +35,69 @@ shinyServer(function(input, output){
              DETAILED_LABEL,FORECASTDATETIME,TEMPERATURE ) %>%
     summarize(count = n(), 
               max = max(BIKE_PREDICTION, na.rm = TRUE))
-  # Observe drop-down event
+  
+    print(cities_max_bike)
+  
+  print(factor(cities_max_bike$BIKE_PREDICTION_LEVEL))
+  myFirstFun<-function(cities_max_bike)
+  {
+    
+    if(cities_max_bike$BIKE_PREDICTION_LEVEL=='small')
+    {
+      
+      mapcol="green"
+      mapradius=6
+    }
+    
+    else if(cities_max_bike$BIKE_PREDICTION_LEVEL=='medium')
+    {
+      mapcol="yellow"
+      mapradius=10
+    }
+    
+    else
+    {
+      mapcol="red"
+      mapradius=12
+    }
+    return(mapcol)
+  }
+  
+  
+  myFirstFun1<-function(cities_max_bike)
+  {
+    
+    if(cities_max_bike$BIKE_PREDICTION_LEVEL=='small')
+    {
+      
+      
+      mapradius=6
+    }
+    
+    else if(cities_max_bike$BIKE_PREDICTION_LEVEL=='medium')
+    {
+      
+      mapradius=10
+    }
+    
+    else 
+    {
+      
+      mapradius=12
+    }
+    return(mapradius)
+  }
   
   # Then render output plots with an id defined in ui.R
   output$city_bike_map <- renderLeaflet({
-    leaflet(cities_max_bike) %>%
-      addTiles() %>%
-      addCircleMarkers(lat = cities_max_bike$LAT, 
-                       lng = cities_max_bike$LNG, 
-                       popup = cities_max_bike$LABEL,
-                       color = color_levels,
-                       radius = cities_max_bike$BIKE_PREDICTION_LEVEL)
+    
+    # Complete this function to render a leaflet map
+    color_levels1 <- colorFactor(palette=c("green", "yellow", "red"),domain=cities_max_bike$BIKE_PREDICTION_LEVEL) 
+    
+    print(~color_levels(cities_max_bike$BIKE_PREDICTION_LEVEL))
+    map <- leaflet(cities_max_bike) %>% addTiles()  %>% 
+      addCircleMarkers(lng = cities_max_bike$LNG, lat = cities_max_bike$LAT,color=myFirstFun(cities_max_bike)
+                       ,radius=myFirstFun1(cities_max_bike),popup=cities_max_bike$LABEL)
     
   })
   
@@ -53,15 +105,19 @@ shinyServer(function(input, output){
   # If All was selected from dropdown, then render a leaflet map with circle markers
   # and popup weather LABEL for all five cities
   observeEvent(input$city_dropdown, {
-    if(input$city_dropdown != 'All') {
-      #Render the city overview map
+  if(input$city_dropdown != 'All') {
       
-    }else {
-      #Render the specific city map
-    } 
-  })
-  
-  # If just one specific city was selected, then render a leaflet map with one marker
-  # on the map and a popup with DETAILED_LABEL displayed
-  
+    leafletProxy("city_bike_map") %>% clearShapes()
+    index = which(cities_max_bike$CITY_ASCII == input$city_dropdown)
+    leafletProxy("city_bike_map")%>% addCircles(lng = cities_max_bike$LNG[index], 
+                                                lat = cities_max_bike$LAT[index],
+                                                popup = cities_max_bike$DETAILED_LABEL[index])
+    
+  }
+  else {
+    
+    leafletProxy("city_bike_map")
+    
+  } 
+ })
 })
